@@ -824,7 +824,7 @@ end
 
 
 local player = game:GetService("Players").LocalPlayer
-local characterName = "Ru2ez9z8dh"
+local characterName = player.Character and player.Character.Name or "Ru2ez9z8dh"
 local myaircraft = workspace:FindFirstChild(characterName .. " Aircraft") or workspace["Ru2ez9z8dh Aircraft"]
 local aircraftModel = workspace:FindFirstChild(player.Name .. " Aircraft")
 
@@ -1038,14 +1038,12 @@ end
 
 while true do
     task.wait()
-
-    -- HORSE REMOVED? STOP LOOP COMPLETELY.
+    
     if not exists(workspace:FindFirstChild("horse")) then
         warn("Horse removed. Animation loop stopped.")
         break
     end
 
-    -- BODY PARTS REMOVED? STOP LOOP.
     if not (
         exists(hfeet1) and exists(hfeet2) and exists(hfeet3) and exists(hfeet4) and
         exists(hfeet11) and exists(hfeet12) and exists(hfeet13) and exists(hfeet14) and
@@ -1055,7 +1053,6 @@ while true do
         break
     end
 
-    -- AIRCRAFT PARTS REMOVED? STOP.
     if not (
         exists(feetparts1[1]) and exists(feetparts1[2]) and exists(feetparts1[3]) and exists(feetparts1[4]) and
         exists(feetparts2[1]) and exists(feetparts2[2]) and exists(feetparts2[3]) and exists(feetparts2[4]) and
@@ -1065,7 +1062,6 @@ while true do
         break
     end
 
-    -- ===== YOUR ORIGINAL CFRAME UPDATES =====
     feetparts1[1].CFrame = hfeet1.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
     feetparts1[2].CFrame = hfeet2.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
     feetparts1[3].CFrame = hfeet3.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
