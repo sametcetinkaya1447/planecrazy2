@@ -799,38 +799,29 @@ StarterGui:SetCore("SendNotification", {
 
 task.wait(2)
 
---if game.Workspace:FindFirstChild("horse") then
---	game.Workspace.horse:Destroy()
---end
---print("e")
---if game.Workspace:FindFirstChild("horse") then
---    print("horse found")
---    for i, v in pairs(game.Workspace.horse:GetChildren()) do
---        if v:IsA("Part") or v:IsA("MeshPart") or v:IsA("Seat") then
---            v.Transparency = 1
---        end
---    end
---end
-if game.Workspace:FindFirstChild("horse") then
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+if Workspace:FindFirstChild("horse") then
     print("horse found")
-    for i, v in pairs(game.Workspace.horse:GetChildren()) do
+    for i, v in pairs(Workspace.horse:GetChildren()) do
         if v:IsA("Part") or v:IsA("MeshPart") or v:IsA("Seat") then
             v.Transparency = 0.99
         end
     end
 end
 
-
-
-
-local player = game:GetService("Players").LocalPlayer
+local player = Players.LocalPlayer
 local characterName = player.Character and player.Character.Name or "Ru2ez9z8dh"
-local myaircraft = workspace:FindFirstChild(characterName .. " Aircraft") or workspace["Ru2ez9z8dh Aircraft"]
-local aircraftModel = workspace:FindFirstChild(player.Name .. " Aircraft")
+local myaircraft = Workspace:FindFirstChild(characterName .. " Aircraft") or Workspace["Ru2ez9z8dh Aircraft"]
+local aircraftModel = Workspace:FindFirstChild(player.Name .. " Aircraft")
 
+if not myaircraft then 
+    warn("Aircraft not found!")
+    return 
+end
 
-
--- STORE PARTS
 local toeparts = {}
 local feetparts1 = {}
 local feetparts2 = {}
@@ -845,8 +836,6 @@ local neckpart = nil
 local mouth1part = nil
 local seat1 = nil
 local seat2 = nil
-
-
 
 for _, v in pairs(myaircraft:GetDescendants()) do
     if v.Name == "Wheel" and v.Parent.Name == "GearTiny" and v.Color == Color3.fromRGB(17,17,17) then
@@ -878,207 +867,190 @@ for _, v in pairs(myaircraft:GetDescendants()) do
     end
 end
 
-print("Collected all parts.") -- 4
-print("Toes: " .. #toeparts) -- 4
-print("Feet1: " .. #feetparts1) -- 4
-print("Feet2: " .. #feetparts2) -- 4
-print("Rounders: " .. #rounderparts) -- 4
-print("Mouth2s: " .. #mouth2part) -- 2
-print("Tails: " .. #tailparts) -- 8
-print("Eyes: " .. #eyeparts) -- 2
-print("Hair: " .. #hairparts) -- 12
+local function setupPhysics(part)
+    if not part then return end
+    
+    part.CanCollide = false
+    part.Anchored = false
 
+    local bf = part:FindFirstChild("ZeroGravityForce") or Instance.new("BodyForce")
+    bf.Name = "ZeroGravityForce"
+    bf.Parent = part
+    bf.Force = Vector3.new(0, part:GetMass() * Workspace.Gravity, 0)
+    
+    local bp = part:FindFirstChild("BodyPosition") or Instance.new("BodyPosition")
+    bp.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+    bp.P = 50000
+    bp.D = 800
+    bp.Position = part.Position
+    bp.Parent = part
 
-print("Torsopart: " .. tostring(torsopart))
-print("Neckpart: " .. tostring(neckpart))
-print("Mouth1part: " .. tostring(mouth1part))
-print("Seat1: " .. tostring(seat1))
-print("Seat2: " .. tostring(seat2))
+    local bg = part:FindFirstChild("BodyGyro") or Instance.new("BodyGyro")
+    bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
+    bg.P = 30000
+    bg.D = 500
+    bg.CFrame = part.CFrame
+    bg.Parent = part
+    
+    part.AssemblyLinearVelocity = Vector3.zero
+end
 
-
-
--- Remote Function
 local function weld(part1, part2, cframe)
     local args = {
-        [1] = "MotorWeld",
-        [2] = aircraftModel.MotorBlock, 
-        [3] = true,
-        [4] = part1,
-        [5] = part2,
-        [6] = cframe,
-        [7] = true 
+        "MotorWeld", aircraftModel:FindFirstChild("MotorBlock"), true, part1, part2, cframe, true 
     }
-    game.ReplicatedStorage.BlockRemotes.MotorLock:FireServer(unpack(args))
-end
-
-local function modifypart(part)
-    if not part then return end
-    part.CanCollide = false
-    local bf = part:FindFirstChild("ZeroGravityForce")
-    if not bf then
-        bf = Instance.new("BodyForce")
-        bf.Name = "ZeroGravityForce"
-        bf.Parent = part
+    if game.ReplicatedStorage:FindFirstChild("BlockRemotes") then
+        game.ReplicatedStorage.BlockRemotes.MotorLock:FireServer(unpack(args))
     end
-    bf.Force = Vector3.new(0, part:GetMass() * workspace.Gravity, 0)
-    part.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-end
-
-
-
-local function burn(part)
-    game:GetService("ReplicatedStorage").Remotes.FireHandler:FireServer(workspace.LavaParts.LavaPart, part)
 end
 
 local function unweld(part)
-    local args = {
-[1] = part,
-[2] = "Break" -- required
-}
-game.ReplicatedStorage.Remotes.UnanchorWelds:FireServer(unpack(args))
+    local args = {part, "Break"}
+    game.ReplicatedStorage.Remotes.UnanchorWelds:FireServer(unpack(args))
 end
 
-for i = 1,11 do 
-    weld(rounderparts[i], torsopart, CFrame.new(0, 2,0)* CFrame.Angles(math.rad(0), math.rad(16.36363636*i), math.rad(0)))
-end
-
-
-
-local Player = game.Players.LocalPlayer
-for _, part in pairs(game.Workspace[Player.Name .. " Aircraft"]:GetDescendants()) do
+for _, part in pairs(myaircraft:GetDescendants()) do
     if part:IsA("BasePart") or part:IsA("Part") or part:IsA("WedgePart") or part:IsA("UnionOperation") then
         part.CanCollide = false
         part.Anchored = false
-        modifypart(part)
     end
 end
 
 for i = 1, 4 do 
-    unweld(toeparts[i].Parent.Part4)
-    print("Unwelded " .. toeparts[i].Name)
-    unweld(toeparts[i].Parent.Part6)
+    if toeparts[i] and toeparts[i].Parent then
+        unweld(toeparts[i].Parent.Part4)
+        unweld(toeparts[i].Parent.Part6)
+    end
 end
 
-for i = 1,8 do 
+for i = 1, #tailparts do 
     unweld(tailparts[i])
-    print("Unwelded " .. tailparts[i].Name)
-    modifypart(tailparts[i])
 end
-
+setupPhysics(tailparts[1])
 unweld(seat1)
 unweld(seat2)
 
-for i = 1,#eyeparts do 
+for i = 1, #eyeparts do 
     unweld(eyeparts[i])
-    print("Unwelded " .. eyeparts[i].Name)
-    modifypart(eyeparts[i])
 end
 
-task.wait()
+task.wait(0.1)
 
-
-    
 weld(tailparts[1], tailparts[2], CFrame.new(0, 0.5, 0)* CFrame.Angles(math.rad(10), math.rad(5), math.rad(30))) 
 weld(tailparts[1], tailparts[3], CFrame.new(0, -0.5, 0)* CFrame.Angles(math.rad(-10), math.rad(0), math.rad(-30))) 
-    
 
-for i = 1,4 do 
+for i = 1, 4 do 
     weld(toeparts[i], feetparts1[i], CFrame.new(-1.5, 0, 0))
 end
 
-for i = 1,11 do 
-    weld(rounderparts[i], torsopart, CFrame.new(0, -0.7,0)* CFrame.Angles(math.rad(0), math.rad(20*i), math.rad(-90)))
+for i = 1, 11 do 
+    weld(rounderparts[i], torsopart, CFrame.new(0, -0.7,0)* CFrame.Angles(0, math.rad(20*i), math.rad(-90)))
 end
-for i = 12,23 do 
-    weld(rounderparts[i], torsopart, CFrame.new(0, -3.5,0)* CFrame.Angles(math.rad(0), math.rad(20*i), math.rad(90)))
+for i = 12, 23 do 
+    weld(rounderparts[i], torsopart, CFrame.new(0, -3.5,0)* CFrame.Angles(0, math.rad(20*i), math.rad(90)))
 end
 
+weld(mouth2part[1], mouth1part , CFrame.new(0, 1.2, -0.5)* CFrame.Angles(math.rad(-12.5), 0, 0))
+weld(mouth2part[2], mouth1part , CFrame.new(0, 1.2, 0.5)* CFrame.Angles(math.rad(12.5), 0, 0))
 
-
-weld(mouth2part[1], mouth1part , CFrame.new(0, 1.2, -0.5)* CFrame.Angles(math.rad(-12.5), math.rad(0), math.rad(0)))
-weld(mouth2part[2], mouth1part , CFrame.new(0, 1.2, 0.5)* CFrame.Angles(math.rad(12.5), math.rad(0), math.rad(0)))
-
-weld(seat1, torsopart, CFrame.new(0, -2, 2.5) * CFrame.Angles(math.rad(0), math.rad(90), 0))
+weld(seat1, torsopart, CFrame.new(0, -2, 2.5) * CFrame.Angles(0, math.rad(90), 0))
 weld(seat2, torsopart, CFrame.new(0, -2, 0) * CFrame.Angles(0, math.rad(90), 0))
 
-weld(eyeparts[1], mouth1part, CFrame.new(-1.25, 0, 0) * CFrame.Angles(math.rad(0), math.rad(-15), math.rad(25)))
+weld(eyeparts[1], mouth1part, CFrame.new(-1.25, 0, 0) * CFrame.Angles(0, math.rad(-15), math.rad(25)))
 weld(eyeparts[2], mouth1part, CFrame.new(1.25, 0, 0) * CFrame.Angles(0, math.rad(15), math.rad(-25)))
 
-weld(hairparts[1], neckpart, CFrame.new(0, -0.65, 0) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)))
-weld(hairparts[2], neckpart, CFrame.new(-0.75, -0.45, 0) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)))
-weld(hairparts[3], neckpart, CFrame.new(-1.5, -0.25, 0) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)))
-weld(hairparts[4], neckpart, CFrame.new(-2.24, -0.05, 0) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)))
+weld(hairparts[1], neckpart, CFrame.new(0, -0.65, 0))
+weld(hairparts[2], neckpart, CFrame.new(-0.75, -0.45, 0))
+weld(hairparts[3], neckpart, CFrame.new(-1.5, -0.25, 0))
+weld(hairparts[4], neckpart, CFrame.new(-2.24, -0.05, 0))
 
-weld(hairparts[5], mouth1part, CFrame.new(0, -0.5, 0) * CFrame.Angles(math.rad(50), math.rad(0), math.rad(0)))
-weld(hairparts[6], mouth1part, CFrame.new(0, -0.5, 0) * CFrame.Angles(math.rad(70), math.rad(0), math.rad(0)))
+weld(hairparts[5], mouth1part, CFrame.new(0, -0.5, 0) * CFrame.Angles(math.rad(50), 0, 0))
+weld(hairparts[6], mouth1part, CFrame.new(0, -0.5, 0) * CFrame.Angles(math.rad(70), 0, 0))
 
-local hfeet1 =  workspace.horse:GetChildren()[50]
-local hfeet2 = workspace.horse:GetChildren()[57]
-local hfeet3 = workspace.horse:GetChildren()[36]
-local hfeet4 = workspace.horse:GetChildren()[43]
+setupPhysics(torsopart)
+setupPhysics(neckpart)
+setupPhysics(mouth1part)
+setupPhysics(tailparts[1])
 
-local hfeet11 = workspace.horse:GetChildren()[49]
-local hfeet12 = workspace.horse:GetChildren()[56]
-local hfeet13 = workspace.horse:GetChildren()[35]
-local hfeet14 = workspace.horse:GetChildren()[42]
-
-local htors = workspace.horse.Part
-
-local hneck = workspace.horse:GetChildren()[2]
-
-local hhead = workspace.horse:GetChildren()[4]
-
-local tailpart = workspace.horse:GetChildren()[12]
-
-
-local function exists(x)
-    return x and x.Parent ~= nil
+for i = 1, 4 do
+    setupPhysics(feetparts1[i])
+    setupPhysics(feetparts2[i])
 end
 
-
-while true do
-    task.wait()
+local function updateBodyMover(part, targetCFrame)
+    if not part then return end
+    local bp = part:FindFirstChild("BodyPosition")
+    local bg = part:FindFirstChild("BodyGyro")
     
-    if not exists(workspace:FindFirstChild("horse")) then
-        warn("Horse removed. Animation loop stopped.")
-        break
+    if bp and bg then
+        bp.Position = targetCFrame.Position
+        bg.CFrame = targetCFrame
     end
-
-    if not (
-        exists(hfeet1) and exists(hfeet2) and exists(hfeet3) and exists(hfeet4) and
-        exists(hfeet11) and exists(hfeet12) and exists(hfeet13) and exists(hfeet14) and
-        exists(htors) and exists(hneck) and exists(hhead) and exists(tailpart)
-    ) then
-        warn("One or more horse parts missing. Loop stopped.")
-        break
-    end
-
-    if not (
-        exists(feetparts1[1]) and exists(feetparts1[2]) and exists(feetparts1[3]) and exists(feetparts1[4]) and
-        exists(feetparts2[1]) and exists(feetparts2[2]) and exists(feetparts2[3]) and exists(feetparts2[4]) and
-        exists(torsopart) and exists(neckpart) and exists(mouth1part) and exists(tailparts[1])
-    ) then
-        warn("Aircraft parts missing. Loop stopped.")
-        break
-    end
-
-    feetparts1[1].CFrame = hfeet1.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
-    feetparts1[2].CFrame = hfeet2.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
-    feetparts1[3].CFrame = hfeet3.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
-    feetparts1[4].CFrame = hfeet4.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
-
-    feetparts2[1].CFrame = hfeet11.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
-    feetparts2[2].CFrame = hfeet12.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
-    feetparts2[3].CFrame = hfeet13.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
-    feetparts2[4].CFrame = hfeet14.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(-90), math.rad(90), 0)
-
-    torsopart.CFrame = htors.CFrame * CFrame.new(0,0,1.3) * CFrame.Angles(0, math.rad(90), 0)
-    neckpart.CFrame = hneck.CFrame * CFrame.new(0,-0.4,0) * CFrame.Angles(math.rad(90), math.rad(90), 0)
-    mouth1part.CFrame = hhead.CFrame * CFrame.new(0,-0.4,0.9) * CFrame.Angles(math.rad(80), 0, 0)
-
-    tailparts[1].CFrame = tailpart.CFrame * CFrame.new(0,0,0) * CFrame.Angles(math.rad(90), 0, math.rad(-90))
-
-
-
-
 end
+
+
+-- DEFINE HORSE PARTS ONCE
+local horse = Workspace:FindFirstChild("horse")
+if not horse then return end
+
+local hChildren = horse:GetChildren()
+
+local hfeet1 = hChildren[50]
+local hfeet2 = hChildren[57]
+local hfeet3 = hChildren[36]
+local hfeet4 = hChildren[43]
+
+local hfeet11 = hChildren[49]
+local hfeet12 = hChildren[56]
+local hfeet13 = hChildren[35]
+local hfeet14 = hChildren[42]
+
+local htors = horse:FindFirstChild("Part")
+local hneck = hChildren[2]
+local hhead = hChildren[4]
+local tailpart = hChildren[12]
+
+if not (hfeet1 and hfeet2 and hfeet3 and hfeet4 and
+        hfeet11 and hfeet12 and hfeet13 and hfeet14 and
+        htors and hneck and hhead and tailpart) then
+    warn("Horse setup failed: some parts are missing.")
+    return
+end
+
+local offsetFeet = CFrame.Angles(math.rad(-90), math.rad(90), 0)
+
+-- HEARTBEAT LOOP (ONLY CHECKS HORSE + MOTORBLOCK EXISTENCE)
+local heartbeatConnection
+
+heartbeatConnection = RunService.Heartbeat:Connect(function()
+    -- stop completely if horse is gone
+    if not horse or not horse.Parent then
+        if heartbeatConnection then
+            heartbeatConnection:Disconnect()
+        end
+        return
+    end
+
+    -- stop completely if MotorBlock is gone
+    if not aircraftModel or not aircraftModel:FindFirstChild("MotorBlock") then
+        if heartbeatConnection then
+            heartbeatConnection:Disconnect()
+        end
+        return
+    end
+
+    updateBodyMover(feetparts1[1], hfeet1.CFrame * offsetFeet)
+    updateBodyMover(feetparts1[2], hfeet2.CFrame * offsetFeet)
+    updateBodyMover(feetparts1[3], hfeet3.CFrame * offsetFeet)
+    updateBodyMover(feetparts1[4], hfeet4.CFrame * offsetFeet)
+
+    updateBodyMover(feetparts2[1], hfeet11.CFrame * offsetFeet)
+    updateBodyMover(feetparts2[2], hfeet12.CFrame * offsetFeet)
+    updateBodyMover(feetparts2[3], hfeet13.CFrame * offsetFeet)
+    updateBodyMover(feetparts2[4], hfeet14.CFrame * offsetFeet)
+
+    updateBodyMover(torsopart, htors.CFrame * CFrame.new(0, 0, 1.3) * CFrame.Angles(0, math.rad(90), 0))
+    updateBodyMover(neckpart, hneck.CFrame * CFrame.new(0, -0.4, 0) * CFrame.Angles(math.rad(90), math.rad(90), 0))
+    updateBodyMover(mouth1part, hhead.CFrame * CFrame.new(0, -0.4, 0.9) * CFrame.Angles(math.rad(80), 0, 0))
+    updateBodyMover(tailparts[1], tailpart.CFrame * CFrame.Angles(math.rad(90), 0, math.rad(-90)))
+end)
