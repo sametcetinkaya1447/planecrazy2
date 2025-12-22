@@ -596,10 +596,18 @@ local Color1=Torso.BrickColor
 local bodvel=Instance.new("BodyVelocity")
 local bg=Instance.new("BodyGyro")
 
+local RunService = game:GetService("RunService")
+
+local TARGET_FPS = 60
+local FRAME_TIME = 1 / TARGET_FPS
+
 function swait(num)
-    local num = num or 1
-    for i = 1, num do
-        wait(1/60) -- Force 60 FPS timing
+    num = num or 1
+    local total = FRAME_TIME * num
+    local elapsed = 0
+
+    while elapsed < total do
+        elapsed += RunService.Heartbeat:Wait()
     end
 end
  
