@@ -596,16 +596,23 @@ local Color1=Torso.BrickColor
 local bodvel=Instance.new("BodyVelocity")
 local bg=Instance.new("BodyGyro")
 
+local targetFPS = 60
+local lastUpdate = tick()
+
 function swait(num)
-if num==0 or num==nil then
-game:service'RunService'.Stepped:wait(0)
-else
-for i=0,num do
-game:service'RunService'.Stepped:wait(0)
+    local num = num or 1
+    local targetTime = num / targetFPS
+    local currentTime = tick()
+    local deltaTime = currentTime - lastUpdate
+    
+    if deltaTime < targetTime then
+        local waitTime = targetTime - deltaTime
+        wait(waitTime)
+    end
+    
+    lastUpdate = tick()
+    game:service'RunService'.Stepped:wait(0)
 end
-end
-end
- 
  
 so = function(id,par,vol,pit) 
 coroutine.resume(coroutine.create(function()
