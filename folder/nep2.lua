@@ -596,22 +596,11 @@ local Color1=Torso.BrickColor
 local bodvel=Instance.new("BodyVelocity")
 local bg=Instance.new("BodyGyro")
 
-local targetFPS = 60
-local lastUpdate = tick()
-
 function swait(num)
     local num = num or 1
-    local targetTime = num / targetFPS
-    local currentTime = tick()
-    local deltaTime = currentTime - lastUpdate
-    
-    if deltaTime < targetTime then
-        local waitTime = targetTime - deltaTime
-        wait(waitTime)
+    for i = 1, num do
+        wait(1/60) -- Force 60 FPS timing
     end
-    
-    lastUpdate = tick()
-    game:service'RunService'.Stepped:wait(0)
 end
  
 so = function(id,par,vol,pit) 
