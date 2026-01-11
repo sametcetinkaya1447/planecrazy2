@@ -21,19 +21,28 @@ end
 
 
 -- welds 2 parts together takes cframe for offset
-genv.Weld = function(part1, part2, cframe)
-    local args = {"MotorWeld", workspace.PIayerAircraft[lpname]:FindFirstChild("MotorBlock"), true, part1, part2, cframe, true}
-    if game.ReplicatedStorage:FindFirstChild("BlockRemotes") then
-        game.ReplicatedStorage.BlockRemotes.MotorLock:FireServer(unpack(args))
-    end
+local player = game.Players.LocalPlayer
+
+getgenv().Weld = function(part1, part2, cframe)
+    local args = {
+        [1] = "MotorWeld",
+        [2] = workspace[player.Name .. " Aircraft"].AnchoredBlockStd.AnchoredStd,
+        [3] = true,
+        [4] = part1,
+        [5] = part2,
+        [6] = cframe,
+        [7] = true
+    }
+
+    game.ReplicatedStorage.BlockRemotes.MotorLock:FireServer(unpack(args))
 end
 
--- unwelds the part from whatever it's welded to 
-genv.Unweld = function(part)
+getgenv().Unweld = function(part)
     local args = {
-    [1] = part,
-    [2] = "Break" -- required
+        [1] = part,
+        [2] = "Break"
     }
+
     game.ReplicatedStorage.Remotes.UnanchorWelds:FireServer(unpack(args))
 end
 
