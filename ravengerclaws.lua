@@ -2,7 +2,7 @@
 if game.Workspace:FindFirstChild("Dummy") then
 	game.Workspace.Dummy:Destroy()
 end
-
+local STOP_EXECUTION = false
 
 
 local Players = game:GetService("Players")
@@ -15,6 +15,74 @@ local hum = char:WaitForChild("Humanoid")
 local root = char:WaitForChild("HumanoidRootPart")
 
 
+local StarterGui = game:GetService("StarterGui")
+
+local function notify(msg)
+    StarterGui:SetCore("SendNotification", {
+        Title = "Error",
+        Text = msg,
+        Duration = 8,
+        Button1 = "OK"
+    })
+end
+
+local player = game:GetService("Players").LocalPlayer
+local characterName = player.Character.Name
+local myaircraft = workspace:FindFirstChild(characterName .. " Aircraft") 
+local aircraftModel = workspace:FindFirstChild(player.Name .. " Aircraft")
+
+local fingerparts1 = {}
+local fingerparts2 = {}
+local haloparts = {}
+local centerparts = {}
+
+for i, v in pairs(myaircraft:GetDescendants()) do
+    if v.Name == "Post" and v.Parent.Name == "Post" and v.Color == Color3.fromRGB(0,0,0) then
+        table.insert(fingerparts1, v)
+    elseif v.Name == "Post" and v.Parent.Name == "Post" and v.Color == Color3.fromRGB(248,248,248) then
+        table.insert(fingerparts2, v)
+    elseif v.Name == "Post" and v.Parent.Name == "Post" and v.Color == Color3.fromRGB(0,0,1) then
+        table.insert(haloparts, v)
+    elseif v.Name == "BlockStd" and v.Parent.Name == "TinyBall" then
+        table.insert(centerparts, v)
+    end
+end
+
+print(#fingerparts2, #fingerparts1, #haloparts, #centerparts)
+
+
+
+
+-- expected amount of parts
+--10 post blocks and paint them to 248,248,248
+--20 post blocks and paint them to 0,0,0
+--40 post blocks and paint them to 0,0,1
+--3 tiny ball and paint them to 248,248,248
+
+
+
+
+if #fingerparts2 < 10 then
+    notify("Not enough WHITE post blocks.\nPlace 10 post blocks and paint them (248,248,248).")
+    return
+end
+
+if #fingerparts1 < 20 then
+    notify("Not enough BLACK post blocks.\nPlace 20 post blocks and paint them (0,0,0).")
+    return
+end
+
+if #haloparts < 40 then
+    notify("Not enough post blocks.\nPlace 40 post blocks and paint them (0,0,1).")
+    return
+end
+
+if #centerparts < 3 then
+    notify("Not enough center balls.\nPlace 3 tiny balls and paint them (248,248,248).")
+    return
+end
+
+print("started")
 
 local follow = {
 	["Torso"] = true,
@@ -43,6 +111,10 @@ for _, p in ipairs(dummy:GetDescendants()) do
 		p.CanCollide = false
 	end
 end
+
+
+
+
 
 
 local dh = dummy:WaitForChild("Humanoid")
@@ -112,31 +184,20 @@ end)
 
 task.wait(1)
 task.spawn(function()
-local player = game:GetService("Players").LocalPlayer
-local characterName = player.Character.Name
-local myaircraft = workspace:FindFirstChild(characterName .. " Aircraft") 
-local aircraftModel = workspace:FindFirstChild(player.Name .. " Aircraft")
 
-local fingerparts1 = {}
-local fingerparts2 = {}
-local haloparts = {}
-local centerparts = {}
 
-for i, v in pairs(myaircraft:GetDescendants()) do
-    if v.Name == "Post" and v.Parent.Name == "Post" and v.Color == Color3.fromRGB(0,0,0) then
-        table.insert(fingerparts1, v)
-    elseif v.Name == "Post" and v.Parent.Name == "Post" and v.Color == Color3.fromRGB(248,248,248) then
-        table.insert(fingerparts2, v)
-    elseif v.Name == "Post" and v.Parent.Name == "Post" and v.Color == Color3.fromRGB(0,0,1) then
-        table.insert(haloparts, v)
-    elseif v.Name == "BlockStd" and v.Parent.Name == "TinyBall" then
-        table.insert(centerparts, v)
-    end
-end
 
 print("total fingerparts1", #fingerparts1)
 print("total fingerparts2", #fingerparts2)
 print("total haloparts", #haloparts)
+
+
+
+-- expected amount of parts
+--10 post blocks and paint them to 248,248,248
+--20 post blocks and paint them to 0,0,0
+--40 post blocks and paint them to 0,0,1
+--3 tiny ball and paint them to 248,248,248
 
 
 -- Remote Function
