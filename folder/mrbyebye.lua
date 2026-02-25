@@ -2,6 +2,7 @@
 
 print("Part1 running")
 task.spawn(function()
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -95,8 +96,9 @@ end
 
 
 Humanoid.WalkSpeed = 0
-Humanoid.JumpPower = 0
-Character.Torso.Anchored = true
+Humanoid.WalkSpeed = 0
+Humanoid.AutoRotate = false
+
 Character.Animate.Disabled = true
 
 -- rig 
@@ -201,6 +203,11 @@ local function updateCharacter()
 
 end
 
+Humanoid.Jumping:Connect(function(active)
+    if active and rig and rig:FindFirstChild("Humanoid") then
+        rig.Humanoid.Jump = true
+    end
+end)
 
 -- Main update loop
 RunService.Heartbeat:Connect(function()
@@ -210,11 +217,7 @@ RunService.Heartbeat:Connect(function()
     if currentTime - lastUpdate >= updateFrequency then
         lastUpdate = currentTime
         
-        if Humanoid.Jump then
-            rig.Humanoid.Jump = true
-            rig.Humanoid.Jump = false
-        end
-        
+
         rig.Humanoid:Move(Humanoid.MoveDirection)
         updateCharacter()
     end
