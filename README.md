@@ -1,7 +1,7 @@
 # planecrazy2
 some scripts goes here since they are too big to paste as text in discord
 
-
+[![](https://dcbadge.limes.pink/api/server/https://discord.gg/SbJpHHKRyh)](https://discord.gg/SbJpHHKRyh)
 ## Directory structure:
 
 ```
