@@ -100,7 +100,7 @@
 	end
 
     local RunService = game:GetService("RunService")
-    local RunService = game:GetService("RunService")
+
 
     
 
