@@ -262,7 +262,7 @@
 	pg = p.PlayerGui
 	c = p.Character
 	he = c.Head
-	t = c.Torso
+	t = c.UpperTorso
 	hu = c.Humanoid
 	mou = nil
 	re(game.workspace, "Hand")
